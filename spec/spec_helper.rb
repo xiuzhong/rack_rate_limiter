@@ -1,7 +1,7 @@
 require "bundler/setup"
 require "rate_limiter"
 require "sliding_window"
-require "byebug"
+require "local_cache_rate_limiter"
 require "timecop"
 
 RSpec.configure do |config|
