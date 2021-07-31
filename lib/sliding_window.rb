@@ -16,14 +16,17 @@ module RateLimiter
       @queue = Array.new(@rate_limit)
       @head = nil   # index of @queue pointing to the latest timestamp, nil if no timestamp
       @bottom = nil # index of @queue pointing to the eldest timestamp, nil if no timestamp
+      @semaphore = Mutex.new
     end
 
     def allow?
       current = Time.now.to_i
-      remove_expired(current - window_size)
-      return false if is_full?
+      @semaphore.synchronize do
+        remove_expired(current - window_size)
+        return false if is_full?
 
-      add_current(current)
+        add_current(current)
+      end
       true
     end
 
