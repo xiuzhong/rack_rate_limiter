@@ -32,7 +32,9 @@ module Rack
           window_size: options[:window_size], rate_limit: options[:rate_limit]
         )
 
-        limiters[label] = Limiter.new(label, block, limiter)
+        @semaphore.synchronize do
+          limiters[label] = Limiter.new(label, block, limiter)
+        end
       end
 
       # Check if the request is accepted, respond if it's not
@@ -42,7 +44,11 @@ module Rack
       # - if it's accepted, return true, nil
       # - if it's not,      return false, response
       def accept_or_respond(request)
-        @limiters.each do |_label, limiter|
+        limiters = @semaphore.synchronize do
+          @limiters.values
+        end
+
+        limiters.each do |limiter|
           return false, response_on_deny(request, limiter) unless limiter.allow?(request)
         end
 
@@ -77,6 +83,7 @@ module Rack
         @limiters = {}
         # TODO add support of other types of RateLimiter
         @limiter_type = LocalCacheRateLimiter
+        @semaphore = Mutex.new
       end
 
       def valid_options?(options)
