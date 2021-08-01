@@ -1,4 +1,4 @@
-RSpec.describe RateLimiter::LocalCacheRateLimiter do
+RSpec.describe Rack::RateLimiter::LocalCacheRateLimiter do
   subject(:rate_limiter) do
     described_class.new(window_size: window_size, rate_limit: rate_limit)
   end

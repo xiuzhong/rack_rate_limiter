@@ -1,4 +1,4 @@
-RSpec.describe RateLimiter::SlidingWindow do
+RSpec.describe Rack::RateLimiter::SlidingWindow do
   subject(:sliding_window) do
     described_class.new(window_size: window_size, rate_limit: rate_limit)
   end
@@ -25,6 +25,23 @@ RSpec.describe RateLimiter::SlidingWindow do
     include_examples 'calls in 10 seconds', 1
     include_examples 'calls in 10 seconds', 2
     include_examples 'calls in 10 seconds', 20
+
+    describe 'the limit is sliding' do
+      let(:window_size) { 10 }
+      let(:rate_limit) { 2 }
+
+      it 'adopts sliding window, instead of fixed time box' do
+        expect(sliding_window.allow?).to be_truthy
+        Timecop.travel(Time.now + window_size / 2) { expect(sliding_window.allow?).to be_truthy }
+        Timecop.travel(Time.now + window_size) do
+          expect(sliding_window.allow?).to be_truthy
+          expect(sliding_window.allow?).to be_falsy
+        end
+        Timecop.travel(Time.now + window_size * 1.5) do
+          expect(sliding_window.allow?).to be_truthy
+        end
+      end
+    end
   end
 
   context 'multiple threads env' do

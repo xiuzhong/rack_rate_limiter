@@ -29,5 +29,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.2"
   spec.add_development_dependency "timecop"
   spec.add_development_dependency "rake", "~> 12.0"
-  # spec.add_development_dependency "byebug"
+  spec.add_development_dependency "rack"
+  spec.add_development_dependency "rack-test"
 end
